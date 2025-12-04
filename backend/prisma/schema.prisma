@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  plan      String
+  credits   Int        @default(0)
+  jobs      VideoJob[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model VideoJob {
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  sourceUrl        String
+  sourceVideoUri   String?
+  status           String
+  templateId       String?
+  template         Template?      @relation(fields: [templateId], references: [id])
+  analysisMetadata Json?
+  renderIds        Json?
+  outputUrls       Json?
+  errorMessage     String?
+  inputs           ClientInputs?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Template {
+  id               String     @id @default(uuid())
+  sourceVideoJobId String
+  name             String
+  engine           String
+  renderScript     Json
+  slots            Json
+  previewUrl       String?
+  jobs             VideoJob[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+model ClientInputs {
+  id         String   @id @default(uuid())
+  videoJobId String   @unique
+  videoJob   VideoJob @relation(fields: [videoJobId], references: [id])
+  logoUri    String?
+  texts      Json
+  colors     Json
+  options    Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
